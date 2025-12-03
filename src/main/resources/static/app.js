@@ -1,11 +1,19 @@
 const apiBase = '/api/todos';
 
+/**
+ * 全タスクを取得する。
+ * サーバの `/api/todos` から JSON 配列を返す。
+ */
 async function fetchTodos() {
   const res = await fetch(apiBase);
   if (!res.ok) throw new Error('Failed to load');
   return res.json();
 }
 
+/**
+ * 新規タスクを作成する。
+ * タイトル文字列を受け取り、作成結果のタスクオブジェクトを返す。
+ */
 async function createTodo(title) {
   const res = await fetch(apiBase, {
     method: 'POST',
@@ -16,6 +24,10 @@ async function createTodo(title) {
   return res.json();
 }
 
+/**
+ * 指定IDのタスクを更新する。
+ * タイトルまたは完了フラグを更新し、更新後のタスクオブジェクトを返す。
+ */
 async function updateTodo(id, { title, completed }) {
   const res = await fetch(`${apiBase}/${id}`, {
     method: 'PUT',
@@ -26,16 +38,28 @@ async function updateTodo(id, { title, completed }) {
   return res.json();
 }
 
+/**
+ * 指定IDのタスクを削除する。
+ * 成功時はレスポンスボディなし（204）またはOKを想定。
+ */
 async function deleteTodo(id) {
   const res = await fetch(`${apiBase}/${id}`, { method: 'DELETE' });
   if (!res.ok && res.status !== 204) throw new Error('Failed to delete');
 }
 
+/**
+ * 全タスクを削除する。
+ * 成功時はレスポンスボディなし（204）またはOKを想定。
+ */
 async function deleteAllTodos() {
   const res = await fetch(`${apiBase}`, { method: 'DELETE' });
   if (!res.ok && res.status !== 204) throw new Error('Failed to delete all');
 }
 
+/**
+ * 要素ノードを生成するユーティリティ。
+ * 属性オブジェクトと子要素からDOMノードを作成する。
+ */
 function el(tag, attrs = {}, ...children) {
   const e = document.createElement(tag);
   Object.entries(attrs).forEach(([k, v]) => {
@@ -48,22 +72,22 @@ function el(tag, attrs = {}, ...children) {
 
 function renderList(items) {
   const list = document.getElementById('list');
+  const completedList = document.getElementById('completed-list');
   list.innerHTML = '';
-  items.sort((a,b) => Number(a.completed) - Number(b.completed) || a.id - b.id);
-  for (const t of items) {
+  completedList.innerHTML = '';
+
+  // IDの昇順で安定表示
+  const sorted = items.slice().sort((a,b) => a.id - b.id);
+
+  for (const t of sorted) {
     const checkbox = el('input', { type: 'checkbox' });
     checkbox.checked = !!t.completed;
-    checkbox.addEventListener('change', async () => {
-      const updated = await updateTodo(t.id, { completed: checkbox.checked, title: t.title });
-      t.completed = updated.completed; t.title = updated.title; t.updatedAt = updated.updatedAt;
-      titleSpan.classList.toggle('completed', t.completed);
-    });
 
     const titleSpan = el('span', { class: 'title' });
     titleSpan.textContent = t.title;
     if (t.completed) titleSpan.classList.add('completed');
 
-    // 簡易編集（タイトルクリックでプロンプト）
+    // タイトル編集
     titleSpan.addEventListener('click', async () => {
       const newTitle = prompt('タイトルを編集', t.title);
       if (newTitle == null) return;
@@ -81,15 +105,41 @@ function renderList(items) {
     });
 
     const li = el('li', {}, checkbox, titleSpan, el('span', { class: 'spacer' }), delBtn);
-    list.appendChild(li);
+
+    // チェック状態変更でAPI更新し、DOMの所属リストを移動
+    checkbox.addEventListener('change', async () => {
+      const updated = await updateTodo(t.id, { completed: checkbox.checked, title: t.title });
+      t.completed = updated.completed; t.title = updated.title; t.updatedAt = updated.updatedAt;
+      titleSpan.classList.toggle('completed', t.completed);
+      // 移動: 完了なら completedList、未完了なら list
+      if (t.completed) {
+        completedList.appendChild(li);
+      } else {
+        list.appendChild(li);
+      }
+    });
+
+    // 初期配置
+    if (t.completed) {
+      completedList.appendChild(li);
+    } else {
+      list.appendChild(li);
+    }
   }
 }
 
+/**
+ * サーバから最新タスクを取得して画面へ反映する。
+ */
 async function refresh() {
   const items = await fetchTodos();
   renderList(items);
 }
 
+/**
+ * アプリ初期化処理。
+ * 入力・追加・全削除のイベントを設定し、初回描画を行う。
+ */
 async function main() {
   const input = document.getElementById('new-title');
   const add = document.getElementById('add');
