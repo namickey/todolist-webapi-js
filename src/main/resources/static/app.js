@@ -43,7 +43,9 @@ async function updateTodo(id, { title, completed }) {
  * 成功時はレスポンスボディなし（204）またはOKを想定。
  */
 async function deleteTodo(id) {
-  const res = await fetch(`${apiBase}/${id}`, { method: 'DELETE' });
+  const res = await fetch(`${apiBase}/${id}`, {
+    method: 'DELETE'
+  });
   if (!res.ok && res.status !== 204) throw new Error('Failed to delete');
 }
 
@@ -52,7 +54,9 @@ async function deleteTodo(id) {
  * 成功時はレスポンスボディなし（204）またはOKを想定。
  */
 async function deleteAllTodos() {
-  const res = await fetch(`${apiBase}`, { method: 'DELETE' });
+  const res = await fetch(`${apiBase}`, {
+    method: 'DELETE'
+  });
   if (!res.ok && res.status !== 204) throw new Error('Failed to delete all');
 }
 
