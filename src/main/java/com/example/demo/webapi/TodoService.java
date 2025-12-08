@@ -18,6 +18,7 @@ public class TodoService {
     }
 
     public Optional<Todo> findById(Long id) {
+        System.out.println("Finding Todo with ID: " + id);
         return mapper.findOptional(id);
     }
 

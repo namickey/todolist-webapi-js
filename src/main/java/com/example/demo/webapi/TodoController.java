@@ -24,11 +24,13 @@ public class TodoController {
 
     @GetMapping
     public List<Todo> list() {
+        System.out.println("list() called");
         return todoService.findAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Todo> get(@PathVariable Long id) {
+        System.out.println("get() called with ID: " + id);
         return todoService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -36,6 +38,7 @@ public class TodoController {
 
     @PostMapping
     public ResponseEntity<Todo> create(@RequestBody CreateTodoRequest req) {
+        System.out.println("create() called with title: " + (req != null ? req.getTitle() : "null"));
         if (req == null || req.getTitle() == null || req.getTitle().isBlank()) {
             return ResponseEntity.badRequest().build();
         }
@@ -45,6 +48,7 @@ public class TodoController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Todo> update(@PathVariable Long id, @RequestBody UpdateTodoRequest req) {
+        System.out.println("update() called with ID: " + id + ", title: " + (req != null ? req.getTitle() : "null") + ", completed: " + (req != null ? req.getCompleted() : "null"));
         return todoService.update(id, req.getTitle(), req.getCompleted())
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -52,12 +56,14 @@ public class TodoController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
+        System.out.println("delete() called with ID: " + id);
         boolean removed = todoService.delete(id);
         return removed ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping
     public ResponseEntity<Void> deleteAll() {
+        System.out.println("deleteAll() called");
         todoService.deleteAll();
         return ResponseEntity.noContent().build();
     }
