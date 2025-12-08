@@ -81,25 +81,26 @@ function renderList(items) {
   completedList.innerHTML = '';
 
   // IDの昇順で安定表示
-  const sorted = items.slice().sort((a,b) => a.id - b.id);
+  const sorted = items.slice().sort((a, b) => a.id - b.id);
 
   for (const t of sorted) {
     const checkbox = el('input', { type: 'checkbox' });
     checkbox.checked = !!t.completed;
 
-    const titleSpan = el('span', { class: 'title' });
+    const titleSpan = el('span', { class: t.completed ? 'title completed' : 'title editable' });
     titleSpan.textContent = t.title;
-    if (t.completed) titleSpan.classList.add('completed');
 
     // タイトル編集
-    titleSpan.addEventListener('click', async () => {
-      const newTitle = prompt('タイトルを編集', t.title);
-      if (newTitle == null) return;
-      const trimmed = newTitle.trim();
-      if (!trimmed) return;
-      const updated = await updateTodo(t.id, { title: trimmed, completed: t.completed });
-      t.title = updated.title; titleSpan.textContent = t.title;
-    });
+    if (!t.completed) {
+      titleSpan.addEventListener('click', async () => {
+        const newTitle = prompt('タイトルを編集', t.title);
+        if (newTitle == null) return;
+        const trimmed = newTitle.trim();
+        if (!trimmed) return;
+        const updated = await updateTodo(t.id, { title: trimmed, completed: t.completed });
+        t.title = updated.title; titleSpan.textContent = t.title;
+      });
+    }
 
     const delBtn = el('button');
     delBtn.textContent = '削除';
