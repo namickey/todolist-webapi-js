@@ -22,12 +22,14 @@ import lombok.RequiredArgsConstructor;
 public class TodoController {
     private final TodoService todoService;
 
+    /** 保存されているすべてのTODOを返す。 */
     @GetMapping
     public List<Todo> list() {
         System.out.println("list() called");
         return todoService.findAll();
     }
 
+    /** 指定IDのTODOを取得し、見つからなければ404を返す。 */
     @GetMapping("/{id}")
     public ResponseEntity<Todo> get(@PathVariable Long id) {
         System.out.println("get() called with ID: " + id);
@@ -36,6 +38,7 @@ public class TodoController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    /** タイトルが有効であれば新しいTODOを作成する。 */
     @PostMapping
     public ResponseEntity<Todo> create(@RequestBody CreateTodoRequest req) {
         System.out.println("create() called with title: " + (req != null ? req.getTitle() : "null"));
@@ -46,6 +49,7 @@ public class TodoController {
         return ResponseEntity.created(URI.create("/api/todos/" + created.getId())).body(created);
     }
 
+    /** 指定したTODOが存在すればタイトルや完了状態を更新する。 */
     @PutMapping("/{id}")
     public ResponseEntity<Todo> update(@PathVariable Long id, @RequestBody UpdateTodoRequest req) {
         System.out.println("update() called with ID: " + id + ", title: " + (req != null ? req.getTitle() : "null") + ", completed: " + (req != null ? req.getCompleted() : "null"));
@@ -54,6 +58,7 @@ public class TodoController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    /** 指定IDのTODOを削除し、存在しなければ404を返す。 */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         System.out.println("delete() called with ID: " + id);
@@ -61,6 +66,7 @@ public class TodoController {
         return removed ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
+    /** 全てのTODOを無条件に削除する。 */
     @DeleteMapping
     public ResponseEntity<Void> deleteAll() {
         System.out.println("deleteAll() called");
