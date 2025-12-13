@@ -13,7 +13,7 @@ TODO管理アプリケーション
 flowchart LR
   user["ユーザ<br/>(ブラウザ)"]
 
-  %% ブラウザ内で動くクライアントをユーザノードの下に配置
+  %% ブラウザ内で動くクライアント
   subgraph user
     subgraph client["クライアント (ブラウザ内で実行)"]
       ui["index.html<br/>UI表示"]
@@ -21,9 +21,6 @@ flowchart LR
     end
   end
 
-　subgraph staticHost["静的配信(Spring Boot)"]
-    staticSrv["/ (index.html, app.js)"]
-  end
   subgraph apiHost["Web API(Spring Boot)"]
     api["TodoController<br/>/api/todos"]
     svc["TodoService"]
@@ -33,10 +30,8 @@ flowchart LR
   db[("H2 Database<br/>jdbc:h2:mem:testdb")]
   init["schema.sql<br/>(起動時DDL)"]
 
-  user -->|HTTP GET /| staticSrv
-  staticSrv --> ui
-  staticSrv --> js
-  ui -.->|操作| js
+  user -.->|操作| ui
+  ui -.-> js
   js -->|"fetch /api/todos (JSON)"| api
 
   api --> svc --> mapper -->|SQL| db
